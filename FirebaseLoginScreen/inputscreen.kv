@@ -1,0 +1,104 @@
+#: import SlideTransition kivy.uix.screenmanager.SlideTransition
+#: import WipeTransition kivy.uix.screenmanager.WipeTransition
+#: import SwapTransition kivy.uix.screenmanager.SwapTransition
+#: import C kivy.utils.get_color_from_hex
+
+# Cannot make use of Roboto family from Labelbase by using bold=True, or italic=True
+
+<InputLabel@MDLabel>:
+    font_name: "Roboto"
+    bold: True
+
+<InputText@MDTextField>:
+    color_mode: "custom"
+    line_color_focus: 0, 0, 0, 1
+    line_color_normal: 0, 0, 0, 1
+    font_name: "Roboto/Roboto-Medium.ttf"
+
+<InputButton@MDRoundFlatButton>:
+    font_name: "Roboto/Roboto-Regular.ttf"
+    text_color: C("#000000")
+    md_bg_color: C("#add8e6")
+    size_hint: .2, .05
+
+
+<InputScreen>:
+    padding: 30, 0, 30, 0
+    spacing: 18
+    background: ""
+    canvas.before:
+        Rectangle:
+            size: self.size
+            pos: self.pos
+            source: root.background
+
+    BoxLayout:
+        orientation: "vertical"
+
+        FloatLayout:
+            size_hint: (1, .05)
+
+            InputLabel:
+                size_hint: 0.6, 0.2
+                pos_hint: {"x": 0.05, "y": .5}
+                text: "DRAW THE WINDOW"
+                color: C('#000000')
+
+        FloatLayout:
+            size_hint: (1, .05)
+
+            InputLabel:
+                pos_hint: {"x": .05, "y": .2}
+                text: root.edge_id
+                color: C('#000000')
+
+            InputText:
+                id: edge_length
+                size_hint_x: .2
+                pos_hint: {"center_x": .3, "y": .05}
+                hint_text: root.input_type
+                input_filter: root.input_filter_type
+
+            MDRaisedButton:
+                id: dropdown_list
+                text: "Typical"
+                size_hint: (None, None)
+                pos_hint: {"center_x": .55, "y": .25}
+
+            InputButton:
+                text: "Add"
+                pos_hint: {"center_x": .85, "y": .25}
+                size_hint: .2, .75
+                on_release:
+                    root.add_edge(edge_length)
+                    # Clear inputs
+                    root.clear_inputs([edge_length])
+
+        GridLayout:
+            cols: 1
+            size_hint: (1, .8)
+            id: window_backdrop
+            pos_hint: {'top': .895, 'left': 1}
+
+        FloatLayout:
+            size_hint: (1, .1)
+
+            # Go to Window inventory page
+            InputButton:
+                text: "Inventory"
+                pos_hint: {"center_x": .3, "y": 0.25}
+                size_hint: .35, .5
+                on_release:
+                    root.parent.transition = SlideTransition(direction='up')
+                    root.parent.current = "inventory_screen"
+                    root.parent.parent.ids.inventory_screen.show_windows()
+
+            # Back to Session Window
+            InputButton:
+                text: "End Session"
+                pos_hint: {"center_x": .7, "y": 0.25}
+                size_hint: .35, .5
+                on_release:
+                    root.parent.transition = SlideTransition(direction='right')
+                    root.parent.current = "session_screen"
+                    root.clear_global_variables()

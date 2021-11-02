@@ -1,0 +1,60 @@
+<FirebaseLoginScreen>:
+    id: firebase_login_screen
+    background: ""
+    canvas.before:
+        Rectangle:
+            size: self.size
+            pos: self.pos
+            source: root.background
+    on_email_exists:
+        sign_up_screen.ids.sign_in_button.disabled = False
+        sign_up_screen.ids.sign_in_button.opacity = 1
+
+    on_email_not_found:
+        sign_in_screen.ids.sign_in_button.disabled = False
+        sign_in_screen.ids.sign_in_button.opacity = 1
+
+    ScreenManager:
+        id: screen_manager
+        WelcomeScreen:
+            id: welcome_screen
+            name: "welcome_screen"
+        SignInScreen:
+            id: sign_in_screen
+            name: "sign_in_screen"
+        SignUpScreen:
+            id: sign_up_screen
+            name: "sign_up_screen"
+        SessionScreen:
+            id: session_screen
+            name: "session_screen"
+            background: ".img/background_app.jpg"
+            local_id: firebase_login_screen.localId
+            id_token: firebase_login_screen.idToken
+        ProfileScreen:
+            id: profile_screen
+            name: "profile_screen"
+            background: ".img/background_app.jpg"
+            local_id: firebase_login_screen.localId
+            id_token: firebase_login_screen.idToken
+        InputScreen:
+            id: input_screen
+            name: "input_screen"
+            background: ".img/background_app.jpg"
+            local_id: firebase_login_screen.localId
+            id_token: firebase_login_screen.idToken
+        InventoryScreen:
+            id: inventory_screen
+            name: "inventory_screen"
+            background: ".img/background_app.jpg"
+            local_id: firebase_login_screen.localId
+            id_token: firebase_login_screen.idToken
+            session: session_screen.session
+        AnalysisScreen:
+            id: analysis_screen
+            name: "analysis_screen"
+            background: ".img/background_app.jpg"
+        WindowInfoScreen:
+            id: window_info_screen
+            name: "window_info_screen"
+            background: ".img/background_app.jpg"

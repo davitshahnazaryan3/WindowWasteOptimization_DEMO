@@ -1,0 +1,21 @@
+#:import FirebaseLoginScreen FirebaseLoginScreen.firebaseloginscreen.FirebaseLoginScreen
+#:import utils kivy.utils
+
+ScreenManager:
+    id: screen_manager
+    FirebaseLoginScreen:
+        id: firebase_login_screen
+        name: "firebase_login_screen"
+        debug: True
+        remember_user: True
+        require_email_verification: True
+        web_api_key: "AIzaSyDWcUEC5Ojj9FxkhnFGHLO7Nyl9QXH-0xk"
+        background: ".img/background_app.jpg"
+
+        on_login_success:
+            if self.login_state == 'in': print("User has logged in. Unique identifier is ", self.localId)
+            if self.login_state == 'out': print("User signed out")
+
+            if self.login_state == 'in': app.local_id = self.localId
+            if self.login_state == 'in': app.user_idToken = self.idToken
+            if self.login_state == 'in': self.ids.screen_manager.current = 'session_screen'

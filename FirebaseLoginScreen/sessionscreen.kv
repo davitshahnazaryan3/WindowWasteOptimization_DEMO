@@ -1,0 +1,105 @@
+#: import SlideTransition kivy.uix.screenmanager.SlideTransition
+#: import WipeTransition kivy.uix.screenmanager.WipeTransition
+#: import SwapTransition kivy.uix.screenmanager.SwapTransition
+#: import C kivy.utils.get_color_from_hex
+
+
+<SessionLabel@MDLabel>:
+    font_name: "Roboto"
+    font_size: 20
+    bold: False
+
+<SessionButton@MDRoundFlatButton>:
+    font_name: "Roboto/Roboto-Regular.ttf"
+    text_color: C("#000000")
+    md_bg_color: C("#add8e6")
+    size_hint: .8, .25
+    font_size: 16
+
+
+<SessionRow>:
+    padding: 30, 0, 30, 0
+    spacing: 18
+
+    InventoryLabel:
+        color: C('#000000')
+        pos_hint: {"x": .1, "center_y": 0.5}
+        text: root.label
+        size_hint: (0.4, None)
+
+    ProfileButton:
+        text: "Continue"
+        pos_hint: {"x": 0.7, "center_y": 0.5}
+        size_hint: .2, .5
+        on_release:
+            app.root.ids.firebase_login_screen.ids.session_screen.continue_session(root.session_id)
+            app.change_screen("input_screen", "left", "push")
+            app.root.ids.firebase_login_screen.ids.input_screen.session = app.root.ids.firebase_login_screen.ids.session_screen.session
+
+
+<SessionScreen>:
+    session: root.session
+    grid: grid
+    background: ""
+    canvas.before:
+        Rectangle:
+            size: self.size
+            pos: self.pos
+            source: root.background
+
+    BoxLayout:
+        orientation: "vertical"
+
+        BoxLayout:
+            size_hint: (1, 0.1)
+            orientation: "horizontal"
+            padding: 30, 0, -180, 0
+
+            SessionLabel:
+                color: C('#000000')
+                pos_hint: {"x": .05, "top": 1}
+                text: "First Accessed"
+                size_hint: (0.3, None)
+                font_size: 24
+
+        ScrollView:
+            size_hint: (1, .65)
+            bar_width: 5
+            bar_color: C("#363030")
+            bar_inactive_color: C("#756060")
+            effect_cls: 'ScrollEffect'
+            scroll_type: ['bars', 'content']
+
+            GridLayout:
+                id: grid
+                orientation: "tb-lr"
+                size_hint_y: None
+                height: self.minimum_height
+                row_default_height: 60
+                cols: 1
+
+        FloatLayout:
+            size_hint: (1, .25)
+
+            SessionButton:
+                text: "Create New Profile"
+                pos_hint: {"center_x": .5, "center_y": 0.8}
+                on_release:
+                    root.parent.transition = SlideTransition(direction='left')
+                    root.parent.current = "profile_screen"
+
+            SessionButton:
+                text: "Start New Session"
+                pos_hint: {"center_x": .5, "center_y": 0.5}
+                on_release:
+                    root.parent.transition = SlideTransition(direction='left')
+                    root.parent.current = "input_screen"
+                    root.generate_session()
+                    root.parent.parent.ids.input_screen.session = root.session
+                    root.parent.parent.ids.session_screen.get_windows_ids()
+
+            SessionButton:
+                text: "Log Out"
+                pos_hint: {"center_x": .5, "center_y": 0.2}
+                on_release:
+                    app.sign_out()

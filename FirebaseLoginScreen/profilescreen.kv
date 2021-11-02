@@ -1,0 +1,158 @@
+#: import SlideTransition kivy.uix.screenmanager.SlideTransition
+#: import C kivy.utils.get_color_from_hex
+
+
+<ProfileLabel@MDLabel>:
+    font_name: "Roboto"
+    font_size: 20
+    bold: False
+
+<ProfileButton@MDRoundFlatButton>:
+    font_name: "Roboto/Roboto-Regular.ttf"
+    text_color: C("#000000")
+    md_bg_color: C("#add8e6")
+    font_size: 16
+
+<ProfileTextField@MDTextField>:
+    color_mode: "custom"
+    line_color_focus: 0, 0, 0, 1
+    line_color_normal: 0, 0, 0, 1
+    font_name: "Roboto/Roboto-Medium.ttf"
+
+
+<ProfileUnique>:
+    name: name
+    length: length
+    id: profile_unique
+
+    padding: 30, 0, 30, 0
+    spacing: 18
+    ProfileTextField:
+        name: "name"
+        id: name
+        pos_hint: {"x": .05, "center_y": .5}
+        size_hint: (0.13, None)
+        hint_text: "Name"
+
+    ProfileTextField:
+        name: "length"
+        id: length
+        pos_hint: {"x": 0.05, "center_y": .5}
+        size_hint: (0.2, None)
+        hint_text: "length"
+        input_filter: "float"
+        spacing: 50
+
+    ProfileButton:
+        text: "Add"
+        pos_hint: {"center_x": 0.05, "center_y": 0.5}
+        size_hint: .1, .5
+        on_release:
+            root.add_profile()
+            root.clear_inputs([name, length]) if name.text != "" or length.text != "" else None
+
+
+<ProfileUniqueCreated>:
+    padding: 30, 0, 30, 0
+    spacing: 18
+
+    x1: ""
+    x2: ""
+
+    ProfileLabel:
+        color: C('#000000')
+        pos_hint: {"x": .05, "center_y": 0.5}
+        text: root.x1
+        size_hint: (0.13, None)
+
+    ProfileLabel:
+        color: C('#000000')
+        pos_hint: {"x": .05, "center_y": 0.5}
+        text: root.x2
+        size_hint: (0.2, None)
+
+    ProfileButton:
+        text: "Del"
+        pos_hint: {"center_x": 0.05, "center_y": 0.5}
+        size_hint: .1, .5
+        on_release:
+            root.remove_row()
+
+
+<ProfileScreen>:
+    id: profile_screen
+    name: "profile_screen"
+    grid: grid
+    background: ""
+    canvas.before:
+        Rectangle:
+            size: self.size
+            pos: self.pos
+            source: root.background
+
+    BoxLayout:
+        orientation: "vertical"
+        BoxLayout:
+            size_hint: (1, 0.1)
+            orientation: "horizontal"
+            padding: 30, 0, 0, 0
+
+            ProfileLabel:
+                color: C('#000000')
+                pos_hint: {"x": .05, "top": 1}
+                text: "Name"
+                size_hint: (0.3, None)
+                font_size: 24
+
+            ProfileLabel:
+                color: C('#000000')
+                text: "Dimension"
+                pos_hint: {"x": -.4, "top": 1}
+                size_hint: (0.7, None)
+                font_size: 24
+
+        ScrollView:
+            size_hint: (1, .8)
+            bar_width: 5
+            bar_color: C("#363030")
+            bar_inactive_color: C("#756060")
+            effect_cls: 'ScrollEffect'
+            scroll_type: ['bars', 'content']
+
+            GridLayout:
+                id: grid
+                orientation: "tb-lr"
+                size_hint_y: None
+                height: self.minimum_height
+                row_default_height: 60
+                cols: 1
+
+                BoxLayout:
+                    padding: 30, 0, 0, 0
+                    orientation: "horizontal"
+                    ProfileLabel:
+                        color: C('#000000')
+                        pos_hint: {"x": .05, "top": 1}
+                        text: "Typical"
+                        size_hint: (0.3, None)
+
+                    ProfileLabel:
+                        color: C('#000000')
+                        pos_hint: {"x": -0.4, "top": 1}
+                        text: "6.0"
+                        size_hint: (0.7, None)
+
+                ProfileUnique:
+                    id: profile_unique
+                    local_id: profile_screen.local_id
+                    id_token: profile_screen.id_token
+
+        FloatLayout:
+            size_hint: (1, .1)
+            ProfileButton:
+                text: "Back"
+                pos_hint: {"center_x": .5, "center_y": 0.4}
+                size_hint: .4, .5
+                on_release:
+                    root.parent.transition = SlideTransition(direction='right')
+                    root.parent.current = "session_screen"

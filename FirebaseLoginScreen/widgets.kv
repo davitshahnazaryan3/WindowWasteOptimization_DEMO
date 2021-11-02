@@ -1,0 +1,24 @@
+<Node@RelativeLayout>:
+    size_hint: None, None
+    size: 10, 10
+
+    canvas:
+        Color:
+            rgb: 0, 0, 0
+
+        PushMatrix
+        Ellipse:
+            size: 10, 10
+        PopMatrix
+
+<Widgets>:
+    MDTextField:
+        id: _text_field
+        color_mode: "custom"
+        line_color_focus: 0, 0, 0, 1
+        line_color_normal: 0, 0, 0, 1
+        font_name: "Roboto/Roboto-Medium.ttf"
+        size_hint_x: .2
+        pos_hint: {"center_x": .25, "top": .72}
+        hint_text: "Node i"
+        input_filter: "int"
