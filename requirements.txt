@@ -1,0 +1,8 @@
+python-constraint~=1.4.0
+Kivy~=2.0.0
+certifi~=2021.10.8
+kivymd~=0.104.2
+matplotlib~=3.4.3
+numpy~=1.21.3
+six~=1.16.0
+kivy_garden~=0.1.4
