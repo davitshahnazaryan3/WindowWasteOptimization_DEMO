@@ -1,40 +1,30 @@
-import kivy.uix.colorpicker
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.screenmanager import Screen, SlideTransition
-from kivy.properties import BooleanProperty, StringProperty, NumericProperty, ObjectProperty, DictProperty, ListProperty
+from kivy.properties import BooleanProperty, StringProperty, NumericProperty,\
+    ObjectProperty
 from kivy.event import EventDispatcher
 from kivy.network.urlrequest import UrlRequest
 from kivy.app import App
 from kivy.lang import Builder
 from kivy.factory import Factory
-from kivy.graphics import Line, Ellipse, Color, RoundedRectangle
-from kivy.uix.scrollview import ScrollView
-from kivy.utils import get_color_from_hex
 from kivymd.uix.label import MDLabel
-from kivymd.uix.button import MDFlatButton, MDRoundFlatButton
+from kivymd.uix.button import MDFlatButton
 from kivymd.uix.dialog import MDDialog
-from kivymd.uix.menu import MDDropdownMenu
 from kivymd.uix.textfield import MDTextField
 from kivy.uix.image import Image
-from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.boxlayout import BoxLayout
-from kivy.clock import Clock
-from kivy.uix.widget import Widget
-from kivy.utils import get_color_from_hex
+
 # Additional dependencies
 import certifi
 from json import dumps
 import os.path
 import pyrebase
 from datetime import datetime
-import numpy as np
+
 # For Snackbar
 from kivymd.uix.snackbar import Snackbar
-from kivy.core.window import Window
-from kivy.metrics import dp
-from kivy.logger import Logger
-from FirebaseLoginScreen.accordion import Accordion, AccordionItem
-from FirebaseLoginScreen.specialbuttons import LabelButton, ImageButton
+from App.accordion import Accordion, AccordionItem
+from App.specialbuttons import LabelButton, ImageButton
 from model.model_optimization import ModelOptimization
 
 # KivyMD imports
@@ -44,6 +34,8 @@ from kivymd.toast import toast
 import sys
 from kivy.uix.dropdown import DropDown
 from kivy.uix.button import Button
+
+from App.config import settings
 
 sys.path.append("/".join(x for x in __file__.split("/")[:-1]))
 
@@ -63,14 +55,14 @@ Builder.load_file(folder + "/profilescreen.kv")
 
 # Pyrebase
 firebaseConfig = {
-    "apiKey": "your_api_key",
-    "authDomain": "yourAauthDomain",
-    "databaseURL": "yourDatabaseURL",
-    "projectId": "eurooptimization",
-    "storageBucket": "yourStorageBucket",
-    "messagingSenderId": "yourID",
-    "appId": "yourID",
-    "measurementId": "yourID"
+    "apiKey": settings.apiKey,
+    "authDomain": settings.authDomain,
+    "databaseURL": settings.databaseURL,
+    "projectId": settings.projectId,
+    "storageBucket": settings.storageBucket,
+    "messagingSenderId": settings.messagingSenderId,
+    "appId": settings.appId,
+    "measurementId": settings.measurementId,
 }
 
 firebase = pyrebase.initialize_app(firebaseConfig)
@@ -81,7 +73,8 @@ windows = {}
 windows_ids = []
 app = App.get_running_app()
 # Temporary window while incomplete
-window_temp = {"type": 1, "side": {"length": [None], "profile": [None]}, "quantity": 0}
+window_temp = {"type": 1, "side": {"length": [None], "profile": [None]},
+               "quantity": 0}
 
 
 def binary_search_iterative(arr, x):
@@ -124,17 +117,19 @@ class ProfileUnique(BoxLayout):
         if x1 != "" and x2 != "":
             if x1 not in app.profile_lib:
                 # Create the row if it is not created yet
-                self.parent.add_widget(ProfileUniqueCreated(x1, x2, self.local_id, self.id_token), index=0)
+                self.parent.add_widget(ProfileUniqueCreated(
+                    x1, x2, self.local_id, self.id_token), index=0)
                 # Add into the library of profiles
                 app.profile_lib[x1] = x2
                 # Add profile to database
-                db.child("users").child(self.local_id).child("Profiles").child(x1).set(x2, self.id_token)
+                db.child("users").child(self.local_id).child("Profiles").\
+                    child(x1).set(x2, self.id_token)
 
             else:
                 # Alert
-                Snackbar(text=f"Profile: {x1} exists!").show()
+                Snackbar(text=f"Profile: {x1} exists!").open()
         else:
-            Snackbar(text="Profile properties missing!").show()
+            Snackbar(text="Profile properties missing!").open()
 
     def clear_inputs(self, text_inputs):
         for text_input in text_inputs:
@@ -157,7 +152,8 @@ class ProfileUniqueCreated(BoxLayout):
     def remove_row(self):
         self.parent.remove_widget(self)
         app.profile_lib.pop(self.x1, None)
-        db.child("users").child(self.local_id).child("Profiles").child(self.x1).remove(self.id_token)
+        db.child("users").child(self.local_id).child("Profiles").\
+            child(self.x1).remove(self.id_token)
 
 
 class ProfileScreen(Screen):
@@ -170,14 +166,18 @@ class ProfileScreen(Screen):
 
     def on_pre_enter(self, *args):
         if not self.profiles_shown:
-            profiles = db.child("users").child(self.local_id).child("Profiles").get(self.id_token)
-            for profile in profiles.each():
-                x1 = profile.key()
-                x2 = profile.val()
-                # Create the row if it is not created yet
-                self.ids.grid.add_widget(ProfileUniqueCreated(x1, x2, self.local_id, self.id_token), index=0)
-                # Add into the library of profiles
-                app.profile_lib[x1] = x2
+            profiles = db.child("users").child(self.local_id).\
+                child("Profiles").get(self.id_token)
+
+            if profiles.each():
+                for profile in profiles.each():
+                    x1 = profile.key()
+                    x2 = profile.val()
+                    # Create the row if it is not created yet
+                    self.ids.grid.add_widget(ProfileUniqueCreated(
+                        x1, x2, self.local_id, self.id_token), index=0)
+                    # Add into the library of profiles
+                    app.profile_lib[x1] = x2
             self.profiles_shown = True
 
 
@@ -188,8 +188,8 @@ class SessionRow(Screen):
     def __init__(self, date, **kwargs):
         super(SessionRow, self).__init__(**kwargs)
         self.session_id = date
-        self.label = date[1:3] + "-" + date[3:5] + "-" + date[5:9] + ", " + date[9:11] + ":" + date[11:13] + ":" + \
-                     date[13:]
+        self.label = date[1:3] + "-" + date[3:5] + "-" + date[5:9] + ", " \
+            + date[9:11] + ":" + date[11:13] + ":" + date[13:]
 
 
 class SessionScreen(Screen):
@@ -220,7 +220,8 @@ class SessionScreen(Screen):
     def get_windows_ids(self):
         global windows_ids
 
-        window_db = db.child("users").child(self.local_id).child(self.session).child("Windows").get(self.id_token)
+        window_db = db.child("users").child(self.local_id).\
+            child(self.session).child("Windows").get(self.id_token)
         if window_db.each() is not None:
             for window in window_db.each():
                 if window.val() is not None:
@@ -268,18 +269,21 @@ class InputScreen(Screen):
     input_filter_type = StringProperty("float")
     session = StringProperty("")
 
-    # Dropdown list for profile selection, default to typical profile name, with 6.0 m
+    # Dropdown list for profile selection, default to typical profile name,
+    # with 6.0 m
     dropdown_menu = ObjectProperty()
 
     def on_pre_enter(self, *args):
         self.dropdown_menu = DropDown()
         for key in app.profile_lib.keys():
             btn = Button(text=key, size_hint_y=None, height=44)
-            btn.bind(on_release=lambda btn: self.dropdown_menu.select(btn.text))
+            btn.bind(on_release=lambda btn: self.dropdown_menu.select(
+                btn.text))
             self.dropdown_menu.add_widget(btn)
 
         self.ids.dropdown_list.bind(on_release=self.dropdown_menu.open)
-        self.dropdown_menu.bind(on_select=lambda instance, x: setattr(self.ids.dropdown_list, 'text', x))
+        self.dropdown_menu.bind(on_select=lambda instance, x: setattr(
+            self.ids.dropdown_list, 'text', x))
         self.dropdown_menu.bind(on_select=self.dropdown_menu.dismiss)
 
         # Front layer showing the windows
@@ -287,8 +291,9 @@ class InputScreen(Screen):
             frontlayer = app.windowtypebackdrop.ids.frontlayer
             frontlayer.clear_widgets()
             # Draw the window figure, if it has not been drawn
-            frontlayer.add_widget(Image(source=".img/window1.png", allow_stretch=False, keep_ratio=True))
-        except:
+            frontlayer.add_widget(Image(source=".img/window1.png",
+                                        allow_stretch=False, keep_ratio=True))
+        except Exception:
             pass
 
     def clear_inputs(self, text_inputs):
@@ -304,8 +309,10 @@ class InputScreen(Screen):
 
                 # Add data to current window
                 window_temp["side"]["length"].append(length.text)
-                window_temp["side"]["profile"].append(self.ids.dropdown_list.text)
-                Snackbar(text=f"Edge: {self.edge_id} with length of {length.text} added!").show()
+                window_temp["side"]["profile"].append(
+                    self.ids.dropdown_list.text)
+                Snackbar(text=f"Edge: {self.edge_id} with length of"
+                         " {length.text} added!").open()
 
                 # Go to next edge
                 new_edge_id = str(f"({int(self.edge_id.strip('()')) + 1})")
@@ -316,10 +323,12 @@ class InputScreen(Screen):
                     self.input_type = "qnt"
                     self.input_filter_type = "int"
             else:
-                # All edges added, add quantity and then window to database and reset Input Screen
+                # All edges added, add quantity and then window to database
+                # and reset Input Screen
                 # here length means quantity
                 window_temp["quantity"] = length.text
-                Snackbar(text=f"Window: {self.id_window} with Quantity: {length.text} added!").show()
+                Snackbar(text=f"Window: {self.id_window} with Quantity:"
+                         " {length.text} added!").open()
 
                 # Add window type to database
                 window_temp["type"] = app.window_type
@@ -331,7 +340,7 @@ class InputScreen(Screen):
                 self.add_window()
 
         else:
-            Snackbar(text="Window information missing!").show()
+            Snackbar(text="Window information missing!").open()
 
     def reset_inputs(self):
         self.edge_id = "(1)"
@@ -348,7 +357,8 @@ class InputScreen(Screen):
     def add_window(self):
         global window_temp, windows_ids, windows
 
-        # Note: at the moment not expecting a large database of windows per session per user,
+        # Note: at the moment not expecting a large database of windows per
+        # session per user,
         # so optimized search is not done
         while str(self.id_window) in windows_ids:
             # Increment windows_id while in existing database
@@ -357,7 +367,8 @@ class InputScreen(Screen):
         windows[self.id_window] = window_temp
 
         # Add window into the database
-        db.child("users").child(self.local_id).child(self.session).child("Windows").child(str(self.id_window)). \
+        db.child("users").child(self.local_id).child(
+            self.session).child("Windows").child(str(self.id_window)). \
             set(windows[self.id_window], self.id_token)
 
         # Add the window id
@@ -387,7 +398,8 @@ class WindowRow(Screen):
     session = StringProperty("")
     profile = StringProperty("")
 
-    def __init__(self, session, id_window, local_id, id_token, edge, label, profile, **kwargs):
+    def __init__(self, session, id_window, local_id, id_token, edge, label,
+                 profile, **kwargs):
         super(WindowRow, self).__init__(**kwargs)
         self.session = session
         self.id_window = id_window
@@ -405,9 +417,11 @@ class WindowRow(Screen):
             content_cls=Content(),
 
             buttons=[
-                MDFlatButton(text="Cancel", text_color=app.theme_cls.primary_color,
+                MDFlatButton(text="Cancel",
+                             text_color=app.theme_cls.primary_color,
                              on_release=self.close_dialog),
-                MDFlatButton(text="Update", text_color=app.theme_cls.primary_color,
+                MDFlatButton(text="Update",
+                             text_color=app.theme_cls.primary_color,
                              on_release=self.info_updated)
             ]
         )
@@ -421,8 +435,10 @@ class WindowRow(Screen):
             # Update the database
             if self.id_window != 0:
                 # Update as long as it is not the current window
-                db.child("users").child(self.local_id).child(self.session).child("Windows").child(str(self.id_window)).\
-                    child("side").child("length").child(self.label.strip("()")).set(self.edge, self.id_token)
+                db.child("users").child(self.local_id).child(
+                    self.session).child("Windows").child(str(self.id_window)).\
+                    child("side").child("length").child(
+                    self.label.strip("()")).set(self.edge, self.id_token)
 
             else:
                 # Update the temporary window dictionary
@@ -457,7 +473,7 @@ class WindowInfo(Screen):
             self.window = window.val()
             self.id_window = window.key()
             self.disable_button = False
-        except:
+        except Exception:
             # The current window
             self.window = window_temp
             self.id_window = "0"
@@ -489,9 +505,11 @@ class WindowInfo(Screen):
             text="Are you sure?",
             size_hint=(.5, None),
             buttons=[
-                MDFlatButton(text="Cancel", text_color=app.theme_cls.primary_color,
+                MDFlatButton(text="Cancel",
+                             text_color=app.theme_cls.primary_color,
                              on_release=self.close_dialog),
-                MDFlatButton(text="Delete", text_color=app.theme_cls.primary_color,
+                MDFlatButton(text="Delete",
+                             text_color=app.theme_cls.primary_color,
                              on_release=self.dismiss_callback)
             ]
         )
@@ -502,7 +520,8 @@ class WindowInfo(Screen):
         """Delete the Window by its ID"""
         self.parent.parent.parent.parent.parent.remove_widget(self.item)
         windows_ids.remove(str(self.id_window))
-        db.child("users").child(self.local_id).child(self.session).child("Windows").child(self.id_window).\
+        db.child("users").child(self.local_id).child(
+            self.session).child("Windows").child(self.id_window).\
             remove(self.id_token)
         self.dialog.dismiss()
         self.dialog = None
@@ -520,21 +539,24 @@ class WindowInfo(Screen):
         screen = app.root.ids.firebase_login_screen.ids.window_info_screen
 
         # Add quantity line
-        screen.ids.quantity_layout.add_widget(WindowQuantity(self.session, self.id_window, self.quantity, self.local_id,
-                                                             self.id_token))
+        screen.ids.quantity_layout.add_widget(
+            WindowQuantity(self.session, self.id_window, self.quantity,
+                           self.local_id, self.id_token))
 
         # Add the Window edges into the grid
         cnt = 0
         for edge in self.window["side"]["length"]:
             if edge is not None:
                 profile = self.window["side"]["profile"][cnt]
-                screen.ids.grid.add_widget(WindowRow(self.session, self.id_window, self.local_id,
-                                                     self.id_token, edge, cnt, profile), index=0)
+                screen.ids.grid.add_widget(
+                    WindowRow(self.session, self.id_window, self.local_id,
+                              self.id_token, edge, cnt, profile), index=0)
             cnt += 1
 
         # Add the window image into the grid
-        screen.ids.window_image_grid.add_widget(Image(source=self.window_icon_source,
-                                                      allow_stretch=False, keep_ratio=True))
+        screen.ids.window_image_grid.add_widget(
+            Image(source=self.window_icon_source,
+                  allow_stretch=False, keep_ratio=True))
 
 
 class WindowQuantity(Screen):
@@ -545,7 +567,8 @@ class WindowQuantity(Screen):
     id_token = StringProperty("")
     session = StringProperty("")
 
-    def __init__(self, session, id_window, quantity, local_id, id_token, **kwargs):
+    def __init__(self, session, id_window, quantity, local_id, id_token,
+                 **kwargs):
         super(WindowQuantity, self).__init__(**kwargs)
         self.session = session
         self.id_window = id_window
@@ -561,9 +584,11 @@ class WindowQuantity(Screen):
             content_cls=MDTextField(hint_text="Quantity", input_filter="int"),
 
             buttons=[
-                MDFlatButton(text="Cancel", text_color=app.theme_cls.primary_color,
+                MDFlatButton(text="Cancel",
+                             text_color=app.theme_cls.primary_color,
                              on_release=self.close_dialog),
-                MDFlatButton(text="Update", text_color=app.theme_cls.primary_color,
+                MDFlatButton(text="Update",
+                             text_color=app.theme_cls.primary_color,
                              on_release=self.quantity_updated)
             ]
         )
@@ -578,7 +603,8 @@ class WindowQuantity(Screen):
             self.quantity = self.dialog.content_cls.text
             quantity = int(self.dialog.content_cls.text)
             # Update Firebase database
-            db.child("users").child(self.local_id).child(self.session).child("Windows").child(str(self.id_window)).\
+            db.child("users").child(self.local_id).child(
+                self.session).child("Windows").child(str(self.id_window)).\
                 child("quantity").set(quantity, self.id_token)
 
         self.dialog.dismiss()
@@ -615,7 +641,8 @@ class InventoryScreen(Screen):
         global window_temp
 
         # Get all the window information for the user
-        self.windows_db = db.child("users").child(self.local_id).child(self.session).child("Windows").get(self.id_token)
+        self.windows_db = db.child("users").child(self.local_id).child(
+            self.session).child("Windows").get(self.id_token)
 
         # Add Accordion to display available windows
         acc = Accordion(orientation="vertical")
@@ -626,12 +653,15 @@ class InventoryScreen(Screen):
                 if window.val() is not None:
                     window_id = str(window.key())
                     item = AccordionItem(title=f"Window {window_id}")
-                    item.add_widget(WindowInfo(self.session, window, self.local_id, self.id_token, item))
+                    item.add_widget(WindowInfo(
+                        self.session, window, self.local_id, self.id_token,
+                        item))
                     acc.add_widget(item)
 
         # Add the current window
         item = AccordionItem(title="Window temp")
-        item.add_widget(WindowInfo(self.session, window_temp, self.local_id, self.id_token, item))
+        item.add_widget(WindowInfo(self.session, window_temp,
+                        self.local_id, self.id_token, item))
         acc.add_widget(item)
 
     def run_analysis(self):
@@ -675,14 +705,16 @@ class AnalysisScreen(Screen):
         # Clear widgets if any were created
         self.ids.grid.clear_widgets()
         # Get the outputs and present them
-        outputs = app.root.ids.firebase_login_screen.ids.inventory_screen.outputs
+        outputs = app.root.ids.firebase_login_screen.ids.\
+            inventory_screen.outputs
 
         # Each row is a unique cut of a profile
         if outputs is not None:
             for profile_name in outputs:
                 for i in outputs[profile_name]:
                     out = outputs[profile_name][i]
-                    self.ids.grid.add_widget(OutputContent(profile_name, out), index=0)
+                    self.ids.grid.add_widget(
+                        OutputContent(profile_name, out), index=0)
 
     def clear_widgets(self, *args):
         self.ids.grid.clear_widgets()
@@ -700,8 +732,8 @@ class AnalysisScreen(Screen):
 
 class FirebaseLoginScreen(Screen, EventDispatcher):
     """Use this widget as a complete module to incorporate Firebase user
-    authentication in your app. To use this module, instantiate the login screen
-    in the KV language like so:
+    authentication in your app. To use this module, instantiate the login
+    screen in the KV language like so:
     FirebaseLoginScreen:
         web_api_key: "your_firebase_web_api_key"
         debug: True # Not necessary, but will print out debug information
@@ -756,10 +788,12 @@ class FirebaseLoginScreen(Screen, EventDispatcher):
 
     def on_web_api_key(self, *args):
         """
-        When the web api key is set, look for an existing account in local memory.
+        When the web api key is set, look for an existing account in local
+        memory.
         """
         # Try to load the users info if they've already created an account
-        self.refresh_token_file = App.get_running_app().user_data_dir + "/refresh_token.txt"
+        self.refresh_token_file = App.get_running_app().user_data_dir + \
+            "/refresh_token.txt"
         if self.debug:
             print("Looking for a refresh token in:", self.refresh_token_file)
         if self.remember_user:
@@ -773,9 +807,11 @@ class FirebaseLoginScreen(Screen, EventDispatcher):
         """
         if self.debug:
             print("Attempting to create a new account: ", email, password)
-        signup_url = "https://www.googleapis.com/identitytoolkit/v3/relyingparty/signupNewUser?key=" + self.web_api_key
+        signup_url = "https://www.googleapis.com/identitytoolkit/v3/relyingparty/signupNewUser?key=" \
+            + self.web_api_key
         signup_payload = dumps(
-            {"email": email, "password": password, "returnSecureToken": "true"})
+            {"email": email, "password": password,
+             "returnSecureToken": "true"})
 
         UrlRequest(signup_url, req_body=signup_payload,
                    on_success=self.successful_sign_up,
@@ -800,7 +836,8 @@ class FirebaseLoginScreen(Screen, EventDispatcher):
             self.login_success = True
 
     def sign_in_success(self, urlrequest, log_in_data):
-        """Collects info from Firebase upon successfully registering a new user.
+        """Collects info from Firebase upon successfully registering a
+        new user.
         """
         if self.debug:
             print("Successfully signed in a user: ", log_in_data)
@@ -842,8 +879,8 @@ class FirebaseLoginScreen(Screen, EventDispatcher):
         """
         if self.debug:
             print("Attempting to sign user in: ", email, password)
-        sign_in_url = "https://www.googleapis.com/identitytoolkit/v3/relyingparty/verifyPassword?key=" + \
-                      self.web_api_key
+        sign_in_url = "https://www.googleapis.com/identitytoolkit/v3/relyingparty/verifyPassword?key=" \
+            + self.web_api_key
         sign_in_payload = dumps(
             {"email": email, "password": password, "returnSecureToken": True})
 
@@ -875,14 +912,16 @@ class FirebaseLoginScreen(Screen, EventDispatcher):
 
         Sends an automated email on behalf of your Firebase project to the user
         with a link to reset the password. This email can be customized to say
-        whatever you want. Simply change the content of the template by going to
-        Authentication (in your Firebase project) -> Templates -> Password reset
+        whatever you want. Simply change the content of the template by going
+        to Authentication (in your Firebase project) -> Templates ->
+        Password reset
         """
         if self.debug:
             print("Attempting to send a password reset email to: ", email)
         reset_pw_url = "https://www.googleapis.com/identitytoolkit/v3/relyingparty/getOobConfirmationCode?key=" + \
                        self.web_api_key
-        reset_pw_data = dumps({"email": email, "requestType": "PASSWORD_RESET"})
+        reset_pw_data = dumps(
+            {"email": email, "requestType": "PASSWORD_RESET"})
 
         UrlRequest(reset_pw_url, req_body=reset_pw_data,
                    on_success=self.successful_reset,
@@ -902,7 +941,8 @@ class FirebaseLoginScreen(Screen, EventDispatcher):
         next time the app is opened.
         """
         if self.debug:
-            print("Saving the refresh token to file: ", self.refresh_token_file)
+            print("Saving the refresh token to file: ",
+                  self.refresh_token_file)
         with open(self.refresh_token_file, "w") as f:
             f.write(refresh_token)
 
@@ -922,10 +962,14 @@ class FirebaseLoginScreen(Screen, EventDispatcher):
         file exists.
         """
         if self.debug:
-            print("Attempting to log in a user automatically using a refresh token.")
+            print("Attempting to log in a user automatically using a "
+                  "refresh token.")
         self.load_refresh_token()
-        refresh_url = "https://securetoken.googleapis.com/v1/token?key=" + self.web_api_key
-        refresh_payload = dumps({"grant_type": "refresh_token", "refresh_token": self.refresh_token})
+        refresh_url = "https://securetoken.googleapis.com/v1/token?key=" \
+            + self.web_api_key
+        refresh_payload = dumps(
+            {"grant_type": "refresh_token", "refresh_token":
+             self.refresh_token})
         UrlRequest(refresh_url, req_body=refresh_payload,
                    on_success=self.successful_account_load,
                    on_failure=self.failed_account_load,
@@ -937,7 +981,8 @@ class FirebaseLoginScreen(Screen, EventDispatcher):
         """
         self.hide_loading_screen()
         if self.debug:
-            print("Successfully logged a user in automatically using the refresh token")
+            print("Successfully logged a user in automatically using "
+                  "the refresh token")
         self.idToken = loaded_data['id_token']
         self.localId = loaded_data['user_id']
         self.login_state = 'in'
@@ -971,12 +1016,14 @@ class FirebaseLoginScreen(Screen, EventDispatcher):
         """
 
         if self.debug:
-            print("Attempting to check if the user signed in has verified their email")
+            print("Attempting to check if the user signed in has"
+                  " verified their email")
         check_email_verification_url = "https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=" + self.web_api_key
         check_email_verification_data = dumps(
             {"idToken": self.idToken})
 
-        UrlRequest(check_email_verification_url, req_body=check_email_verification_data,
+        UrlRequest(check_email_verification_url,
+                   req_body=check_email_verification_data,
                    on_success=self.got_verification_info,
                    on_failure=self.could_not_get_verification_info,
                    on_error=self.could_not_get_verification_info,
@@ -1002,8 +1049,9 @@ class FirebaseLoginScreen(Screen, EventDispatcher):
 
         Sends an automated email on behalf of your Firebase project to the user
         with a link to verify their email. This email can be customized to say
-        whatever you want. Simply change the content of the template by going to
-        Authentication (in your Firebase project) -> Templates -> Email Address Verification
+        whatever you want. Simply change the content of the template by going
+        to Authentication (in your Firebase project) -> Templates ->
+        Email Address Verification
 
         This email verification can only be sent after a user has signed up.
         The email will contain a code that must be entered back into the
@@ -1011,7 +1059,8 @@ class FirebaseLoginScreen(Screen, EventDispatcher):
         """
         if self.debug:
             print("Attempting to send a email verification email to: ", email)
-        verify_email_url = "https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=" + self.web_api_key
+        verify_email_url = "https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=" \
+            + self.web_api_key
         verify_email_data = dumps(
             {"idToken": self.idToken, "requestType": "VERIFY_EMAIL"})
 

@@ -1,21 +1,17 @@
-import kivy
-from kivy.app import App
-from kivy.lang import Builder
-from kivy.uix.screenmanager import ScreenManager, Screen
 from kivymd.app import MDApp
-from kivy.config import Config
 from kivy.core.window import Window
-from kivy.metrics import dp
 from kivymd.uix.dialog import MDDialog
-from kivymd.uix.label import MDLabel
 from kivymd.uix.button import MDFlatButton
 from kivy.core.text import LabelBase
 from kivy.utils import get_color_from_hex
-from kivy.properties import StringProperty, ObjectProperty, NumericProperty, DictProperty
-from kivy.uix.screenmanager import Screen, NoTransition, CardTransition
-from FirebaseLoginScreen.inputscreenbackdrop import InputScreenBackDropLayout
-from FirebaseLoginScreen.windowtypes import WindowTypes
+from kivy.properties import StringProperty, ObjectProperty,\
+    NumericProperty, DictProperty
+from kivy.uix.screenmanager import NoTransition, CardTransition
+from App.inputscreenbackdrop import InputScreenBackDropLayout
+from App.windowtypes import WindowTypes
 from kivy.uix.image import Image
+from App.config import settings
+
 
 Window.size = (500, 750)
 
@@ -45,10 +41,14 @@ class Main(MDApp):
     # Dialog for popup
     dialog = None
 
+    # Wep API key
+    web_api_key = settings.wep_api_key
+
     def on_start(self):
         # Instantiate window type backdrop layout
         self.windowtypebackdrop = InputScreenBackDropLayout().run()
-        self.root.ids.firebase_login_screen.ids.input_screen.ids.window_backdrop.add_widget(self.windowtypebackdrop)
+        self.root.ids.firebase_login_screen.ids.input_screen.ids\
+            .window_backdrop.add_widget(self.windowtypebackdrop)
 
     def sign_out(self):
         self.show_alert_dialog()
@@ -60,13 +60,15 @@ class Main(MDApp):
                 text="All progress will be saved.",
                 size_hint=(.5, None),
                 buttons=[
-                    MDFlatButton(text="Cancel", text_color=self.theme_cls.primary_color,
+                    MDFlatButton(text="Cancel",
+                                 text_color=self.theme_cls.primary_color,
                                  on_release=self.close_dialog),
-                    MDFlatButton(text="Log Out", text_color=self.theme_cls.primary_color,
+                    MDFlatButton(text="Log Out",
+                                 text_color=self.theme_cls.primary_color,
                                  on_release=self.dismiss_callback)
                 ]
             )
-        self.dialog.set_normal_height()
+        self.dialog.get_normal_height()
         self.dialog.open()
 
     def dismiss_callback(self, inst):
@@ -85,7 +87,8 @@ class Main(MDApp):
             screen_manager.current = screen_name
             return
 
-        screen_manager.transition = CardTransition(direction=direction, mode=mode)
+        screen_manager.transition = CardTransition(
+            direction=direction, mode=mode)
         screen_manager.current = screen_name
 
     def create_window_list(self):
@@ -103,8 +106,9 @@ class Main(MDApp):
         try:
             self.windowtypebackdrop.ids.frontlayer.clear_widgets()
             # Update with new image
-            self.windowtypebackdrop.ids.frontlayer.add_widget(Image(source=f".img/window{window_type}.png",
-                                                                    allow_stretch=False, keep_ratio=True))
+            self.windowtypebackdrop.ids.frontlayer.add_widget(
+                Image(source=f".img/window{window_type}.png",
+                      allow_stretch=False, keep_ratio=True))
             if window_type == 1:
                 self.edges = {"1": 0, "2": 0}
             elif window_type == 2:
@@ -115,7 +119,7 @@ class Main(MDApp):
                 self.edges = {"1": 0, "2": 0, "3": 0, "4": 0}
             else:
                 print("Wrong Window type")
-        except:
+        except Exception:
             # Defaulting to Window type 1
             self.edges = {"1": 0, "2": 0}
 

@@ -1,0 +1,5 @@
+[flake8]
+max-line-length = 79
+ignore = F403, F405, W503, F401
+exclude = tests/*, sample/*
+filename = !*__init__.py

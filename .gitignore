@@ -1,9 +1,6 @@
-
-~$info.xlsx
-info.xlsx
 .idea/*
 venv/*
 *.xml
 *.pyc
-euro_opt_flowchart.drawio
-/archive/
+.env
+.password

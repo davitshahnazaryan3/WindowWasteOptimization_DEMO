@@ -1,6 +1,5 @@
 ### Window waste optimization
 
-
 Demo software to optimize for cutting window profiles 
 within the set standards optimizing for minimum waste. 
 Targeted to companies to create window profiles for a 
@@ -15,6 +14,6 @@ specific building or architectural layout.
 
 * 4 window types for the demo version.
 
-* Graphical UI using kivymd
+* Graphical UI using kivymd (rudementary)
 
 
