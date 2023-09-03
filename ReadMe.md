@@ -16,4 +16,8 @@ specific building or architectural layout.
 
 * Graphical UI using kivymd (rudementary)
 
-
+### Note
+* This is a fun project, the backend of which was utilized
+* While in contrast the app was not deployed
+* The app's UI design is not within the scope of my work, I won't be using kivy
+* For questions contact me
