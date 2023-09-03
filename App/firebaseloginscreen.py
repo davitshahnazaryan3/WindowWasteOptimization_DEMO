@@ -425,7 +425,7 @@ class WindowRow(Screen):
                              on_release=self.info_updated)
             ]
         )
-        self.dialog.set_normal_height()
+        self.dialog.get_normal_height()
         self.dialog.open()
 
     def info_updated(self, inst):
@@ -513,7 +513,7 @@ class WindowInfo(Screen):
                              on_release=self.dismiss_callback)
             ]
         )
-        self.dialog.set_normal_height()
+        self.dialog.get_normal_height()
         self.dialog.open()
 
     def dismiss_callback(self, inst):
@@ -592,7 +592,7 @@ class WindowQuantity(Screen):
                              on_release=self.quantity_updated)
             ]
         )
-        self.dialog.set_normal_height()
+        self.dialog.get_normal_height()
         self.dialog.open()
 
     def quantity_updated(self, inst):
